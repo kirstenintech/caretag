@@ -8,6 +8,7 @@ import {
   CardContent,
   Grid,
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import GridViewIcon from "@mui/icons-material/GridView";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
@@ -110,6 +111,8 @@ const Home = () => {
             }}
           >
             <Button
+              component={RouterLink}
+              to="/upload"
               variant="contained"
               size="large"
               startIcon={<CloudUploadIcon />}
@@ -118,6 +121,8 @@ const Home = () => {
               Upload Care Label
             </Button>
             <Button
+              component={RouterLink}
+              to="/explore"
               variant="outlined"
               size="large"
               startIcon={<GridViewIcon />}
@@ -137,10 +142,6 @@ const Home = () => {
                   height: "100%",
                   display: "flex",
                   flexDirection: "column",
-                  transition: "transform 0.2s",
-                  "&:hover": {
-                    transform: "translateY(-4px)",
-                  },
                 }}
               >
                 <CardContent
