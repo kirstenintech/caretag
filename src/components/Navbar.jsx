@@ -21,7 +21,7 @@ import { Link, useLocation } from "react-router-dom";
 const navItems = [
   { label: "Home", path: "/" },
   { label: "Upload", path: "/upload" },
-  { label: "Browse Symbols", path: "/symbols" },
+  { label: "Browse Symbols", path: "/explore" },
   { label: "About", path: "/about" },
 ];
 
