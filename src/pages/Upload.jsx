@@ -10,9 +10,8 @@ import {
   Alert,
   Link as MuiLink,
 } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import ImageIcon from "@mui/icons-material/Image";
-import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
@@ -24,10 +23,12 @@ import {
 } from "../utils/fileValidation";
 
 const Upload = () => {
+  const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [error, setError] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -97,21 +98,27 @@ const Upload = () => {
     if (cameraInputRef.current) cameraInputRef.current.value = "";
   };
 
-  // Handle analyze image (placeholder for future integration)
+  // Handle analyze image - navigate to analyzing page
   const handleAnalyzeImage = () => {
-    console.log("Analyzing image:", selectedFile);
-    // TODO: Upload to Appwrite Storage and send to classification API
-    alert("Image analysis coming soon!");
+    if (!selectedFile) {
+      setError('Please select an image first');
+      return;
+    }
+
+    // Prevent double-submission
+    if (isAnalyzing) return;
+
+    setIsAnalyzing(true);
+
+    // Navigate to analyzing page with the file
+    navigate('/analyzing', {
+      state: { file: selectedFile },
+    });
   };
 
   // Handle click on upload zone
   const handleUploadZoneClick = () => {
     fileInputRef.current?.click();
-  };
-
-  // Handle camera button click
-  const handleCameraClick = () => {
-    cameraInputRef.current?.click();
   };
 
   const tips = [
@@ -281,9 +288,10 @@ const Upload = () => {
                     variant="contained"
                     size="large"
                     onClick={handleAnalyzeImage}
+                    disabled={isAnalyzing}
                     sx={{ px: 4 }}
                   >
-                    Analyze Image
+                    {isAnalyzing ? "Starting Analysis..." : "Analyze Image"}
                   </Button>
                   <Button
                     variant="outlined"
@@ -291,6 +299,7 @@ const Upload = () => {
                     startIcon={<DeleteIcon />}
                     onClick={handleRemoveImage}
                     color="error"
+                    disabled={isAnalyzing}
                   >
                     Remove Image
                   </Button>

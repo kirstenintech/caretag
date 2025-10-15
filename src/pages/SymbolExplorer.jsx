@@ -18,6 +18,7 @@ import { getImageUrl } from "../utils/imageUtils";
 
 const categories = [
   { id: "washing", label: "Washing", emoji: "🧺" },
+  { id: "bleach", label: "Bleach", emoji: "🧪" },
   { id: "drying", label: "Drying", emoji: "👕" },
   { id: "ironing", label: "Ironing", emoji: "🔥" },
   { id: "dry-cleaning", label: "Dry Cleaning", emoji: "✨" },
@@ -44,7 +45,7 @@ const SymbolExplorer = () => {
 
         // Log first symbol to check structure
         if (data.length > 0) {
-          console.log('Sample symbol data:', data[0]);
+          console.log("Sample symbol data:", data[0]);
         }
 
         // Transform data and construct image URLs
@@ -58,7 +59,9 @@ const SymbolExplorer = () => {
 
         setSymbols(transformedData);
       } catch (err) {
-        setError(err.message || "Failed to load symbols. Please try again later.");
+        setError(
+          err.message || "Failed to load symbols. Please try again later."
+        );
       } finally {
         setLoading(false);
       }
@@ -180,11 +183,7 @@ const SymbolExplorer = () => {
 
         {/* Error State */}
         {error && (
-          <Alert
-            severity="error"
-            sx={{ mb: 4 }}
-            onClose={() => setError(null)}
-          >
+          <Alert severity="error" sx={{ mb: 4 }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}

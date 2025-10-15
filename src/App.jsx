@@ -5,6 +5,8 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import SymbolExplorer from './pages/SymbolExplorer';
 import Upload from './pages/Upload';
+import Analyzing from './pages/Analyzing';
+import Results from './pages/Results';
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<SymbolExplorer />} />
           <Route path="/upload" element={<Upload />} />
+          <Route path="/analyzing" element={<Analyzing />} />
+          <Route path="/results" element={<Results />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
