@@ -7,6 +7,7 @@ const appwriteConfig = {
   databaseId: import.meta.env.VITE_APPWRITE_DATABASE_ID,
   symbolsCollectionId: import.meta.env.VITE_APPWRITE_SYMBOLS_COLLECTION_ID,
   bucketId: import.meta.env.VITE_APPWRITE_BUCKET_ID,
+  functionId: import.meta.env.VITE_APPWRITE_FUNCTION_ID,
 };
 
 // Validate configuration
@@ -17,6 +18,7 @@ const validateConfig = () => {
     'databaseId',
     'symbolsCollectionId',
     'bucketId',
+    'functionId',
   ];
 
   const missing = requiredVars.filter(
