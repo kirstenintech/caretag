@@ -46,6 +46,7 @@ const Analyzing = () => {
 
     // Start the analysis process
     analyzeImage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const analyzeImage = async () => {
