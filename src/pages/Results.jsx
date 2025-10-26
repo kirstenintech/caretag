@@ -19,7 +19,6 @@ const Results = () => {
 
   // Get results from navigation state
   const results = location.state?.results;
-  const fileId = location.state?.fileId;
 
   useEffect(() => {
     // If accessed without data (e.g., page refresh), show error state

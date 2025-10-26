@@ -95,6 +95,7 @@ const Navbar = (props) => {
     if (mobileOpen) {
       setMobileOpen(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   // Close drawer on Escape key
