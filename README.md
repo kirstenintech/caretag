@@ -12,7 +12,7 @@ CareTag lets you upload a picture of your clothing tag and automatically identif
 
 ## Live Demo
 
-[Add your deployed URL here]
+https://caretag.appwrite.network/
 
 ## Tech Stack
 

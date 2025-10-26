@@ -5,126 +5,72 @@ An Appwrite Function that accepts an uploaded image file ID, runs TensorFlow mul
 ## Overview
 
 This function:
+
 1. Accepts a `fileId` from Appwrite Storage
 2. Downloads the image file
-3. Runs inference using a TensorFlow model
-4. Returns top predictions with confidence scores
-5. Enriches each prediction with metadata from the `care_symbols` collection (title, shortDescription, dos, donts, image, category)
+3. Downloads the TensorFlow model from Appwrite Storage (on first run)
+4. Runs inference using the cached model
+5. Returns top predictions with confidence scores
+6. Enriches each prediction with metadata from the `care_symbols` collection (title, shortDescription, dos, donts, image, category)
 
 ## Project Structure
 
 ```
 .
-├── main.py                                    # Appwrite Function entrypoint
-├── predict.py                                 # Model loading and inference logic
-├── requirements.txt                           # Python dependencies
-├── care_symbols_model_20251009_233516.keras  # TensorFlow model file
-├── .env.example                               # Environment variable template
-└── README.md                                  # This file
+├── main.py              # Appwrite Function entrypoint
+├── predict.py           # Model loading and inference logic
+├── requirements.txt     # Python dependencies
+└── README.md            # This file
 ```
+
+**Note**: The TensorFlow model is NOT included in this repository. It is stored in Appwrite Storage and downloaded at runtime.
 
 ## Setup
 
 ### 1. Prerequisites
 
-- Appwrite instance (Cloud or self-hosted)
-- Appwrite CLI installed (`npm install -g appwrite`)
-- Python 3.9+ for local testing
+- Appwrite Cloud account
+- TensorFlow model file
 
-### 2. Upload Model to Appwrite Storage (Recommended)
+### 2. Upload Model to Appwrite Storage
 
-To reduce deployment size, upload your model file to Appwrite Storage:
+1. Go to **Storage** in the Appwrite dashboard
+2. Create a new bucket (e.g., `models`) or use an existing one
+3. Upload your `care_symbols_model_*.keras` file
+4. Copy the **File ID** from the uploaded file
+5. Note the **Bucket ID**
 
-```bash
-# Via Console:
-# 1. Go to Storage → Create a new bucket (e.g., "models")
-# 2. Upload care_symbols_model_20251009_233516.keras
-# 3. Copy the File ID from the uploaded file
-
-# Via CLI (if you have appwrite CLI configured):
-appwrite storage createFile \
-  --bucketId "models" \
-  --fileId "unique()" \
-  --file "./care_symbols_model_20251009_233516.keras"
-```
-
-Note the `bucketId` and `fileId` - you'll need these for environment variables.
+You'll need these IDs for the environment variables.
 
 ### 3. Environment Variables
 
 Configure these environment variables in your Appwrite Function settings:
 
-| Variable | Description | Example | Required |
-|----------|-------------|---------|----------|
-| `APPWRITE_ENDPOINT` | Appwrite API endpoint | `https://cloud.appwrite.io/v1` | Yes |
-| `APPWRITE_PROJECT_ID` | Your Appwrite project ID | `abc123def456` | Yes |
-| `APPWRITE_API_KEY` | Server API key with Storage read + Databases read permissions | `secret_key_here` | Yes |
-| `BUCKET_ID` | Bucket ID where images are uploaded | `uploads` | Yes |
-| `DATABASE_ID` | Database ID containing care_symbols collection | `68e6f397000c5435ebee` | Yes |
-| `COLLECTION_ID` | Collection ID for care symbols | `care_symbols` | Yes |
-| `MODEL_BUCKET_ID` | Bucket ID where model is stored | `models` | If using Storage |
-| `MODEL_FILE_ID` | File ID of the model in Storage | `abc123def` | If using Storage |
-| `MODEL_PATH` | Local path to bundled model file | `./model.keras` | If bundling |
+| Variable              | Description                                                   | Example                        | Required |
+| --------------------- | ------------------------------------------------------------- | ------------------------------ | -------- |
+| `APPWRITE_ENDPOINT`   | Appwrite API endpoint                                         | `https://cloud.appwrite.io/v1` | Yes      |
+| `APPWRITE_PROJECT_ID` | Your Appwrite project ID                                      | `abc123def456`                 | Yes      |
+| `APPWRITE_API_KEY`    | Server API key with Storage read + Databases read permissions | `secret_key_here`              | Yes      |
+| `BUCKET_ID`           | Bucket ID where user images are uploaded                      | `uploads`                      | Yes      |
+| `DATABASE_ID`         | Database ID containing care_symbols collection                | `68e6f397000c5435ebee`         | Yes      |
+| `COLLECTION_ID`       | Collection ID for care symbols                                | `care_symbols`                 | Yes      |
+| `MODEL_BUCKET_ID`     | Bucket ID where TensorFlow model is stored                    | `models`                       | Yes      |
+| `MODEL_FILE_ID`       | File ID of the model in Storage                               | `abc123def`                    | Yes      |
 
-**Choose ONE model loading strategy:**
-- **Option A (Recommended)**: Set `MODEL_BUCKET_ID` and `MODEL_FILE_ID` to download from Storage
-- **Option B**: Set `MODEL_PATH` and include model file in deployment
+### 4. Create and Deploy Function
 
-See `.env.example` for a template.
+1. Go to **Functions** in the Appwrite dashboard
+2. Click **Create Function**
+3. Upload the function code (main.py, predict.py, requirements.txt)
+4. Configure the function settings:
+   - **Runtime**: Python 3.11
+   - **Entrypoint**: `main.py`
+   - **Timeout**: 60 seconds
+   - **Memory**: 1024 MB (TensorFlow requires significant memory)
+5. Add all **Environment Variables** from the table above
+6. Deploy the function
 
-### 4. Create Appwrite Function
-
-```bash
-# Login to Appwrite
-appwrite login
-
-# Initialize function
-appwrite init function
-
-# Follow prompts and select:
-# - Runtime: Python 3.11 (or latest Python runtime)
-# - Entrypoint: main.py
-```
-
-### 5. Configure Function Settings
-
-In your Appwrite Console:
-
-1. Go to **Functions** → Your function
-2. Add **Environment Variables** (see table above)
-3. Set **Runtime**: Python 3.11
-4. Set **Entrypoint**: `main.py`
-5. Set **Timeout**: 60 seconds (adjust based on model size)
-
-### 6. Deploy
-
-**If using Storage for model (Option A - Recommended):**
-
-Deploy WITHOUT the model file to keep package small:
-
-```bash
-# Deploy only code files
-appwrite deploy function
-
-# Or create tarball manually:
-tar -czf function.tar.gz main.py predict.py requirements.txt
-```
-
-Upload `function.tar.gz` via Console with Build Commands: `pip install -r requirements.txt`
-
-**If bundling model (Option B):**
-
-Include model file in deployment:
-
-```bash
-# Deploy all files including model
-appwrite deploy function
-
-# Or create tarball:
-tar -czf function.tar.gz main.py predict.py requirements.txt care_symbols_model_20251009_233516.keras
-```
-
-Note: Deployment will be ~615MB and may take longer.
+The model will be automatically downloaded from Appwrite Storage when the function runs.
 
 ## Usage
 
@@ -133,6 +79,7 @@ Note: Deployment will be ~615MB and may take longer.
 **Endpoint**: `POST /v1/functions/{functionId}/executions`
 
 **Headers**:
+
 ```json
 {
   "X-Appwrite-Project": "your_project_id",
@@ -141,22 +88,25 @@ Note: Deployment will be ~615MB and may take longer.
 ```
 
 **Body**:
+
 ```json
 {
   "fileId": "67890abcdef",
   "topK": 5,
-  "threshold": 0.1
+  "threshold": 0.4
 }
 ```
 
 **Parameters**:
+
 - `fileId` (required): ID of the uploaded image in Appwrite Storage
 - `topK` (optional, default: 5): Number of top predictions to return
-- `threshold` (optional, default: 0.1): Minimum confidence threshold (0-1)
+- `threshold` (optional, default: 0.4): Minimum confidence threshold (0-1)
 
 ### Response Format
 
 **Success Response** (200):
+
 ```json
 {
   "success": true,
@@ -185,6 +135,7 @@ Note: Deployment will be ~615MB and may take longer.
 ```
 
 **Error Response** (400/500):
+
 ```json
 {
   "success": false,
@@ -194,52 +145,46 @@ Note: Deployment will be ~615MB and may take longer.
 
 ## Testing
 
-### Local Testing
-
-1. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
-
-2. Set environment variables:
-```bash
-export APPWRITE_ENDPOINT="https://cloud.appwrite.io/v1"
-export APPWRITE_PROJECT_ID="your_project_id"
-export APPWRITE_API_KEY="your_api_key"
-export BUCKET_ID="uploads"
-export DATABASE_ID="your_database_id"
-export COLLECTION_ID="care_symbols"
-export MODEL_PATH="./care_symbols_model_20251009_233516.keras"
-```
-
-3. Test prediction module:
-```python
-from predict import CareSymbolPredictor
-
-predictor = CareSymbolPredictor("./care_symbols_model_20251009_233516.keras")
-
-# Test with image bytes
-with open("test_image.jpg", "rb") as f:
-    image_bytes = f.read()
-
-results = predictor.predict(image_bytes, top_k=5, threshold=0.1)
-print(results)
-```
-
-### Production Testing
-
 1. Upload a test image to your Appwrite Storage bucket
-2. Get the `fileId` from the upload response
-3. Execute the function via Appwrite Console or API:
+2. Go to **Functions** → Your function → **Execute**
+3. Enter the test parameters:
+   ```json
+   {
+     "fileId": "your_uploaded_file_id",
+     "topK": 5,
+     "threshold": 0.4
+   }
+   ```
+4. Click **Execute** and view the results
 
-```bash
-curl -X POST \
-  https://cloud.appwrite.io/v1/functions/{functionId}/executions \
-  -H "X-Appwrite-Project: your_project_id" \
-  -H "X-Appwrite-Key: your_api_key" \
-  -H "Content-Type: application/json" \
-  -d '{"fileId": "your_file_id"}'
-```
+## How It Works
+
+### Model Loading Strategy
+
+The function uses Appwrite Storage to store and load the TensorFlow model:
+
+1. **First Run (Cold Start)**:
+
+   - Downloads model from Appwrite Storage using `MODEL_BUCKET_ID` and `MODEL_FILE_ID`
+   - Caches model in `/tmp` directory
+   - Loads model into memory
+   - **Duration**: ~3-5 seconds
+
+2. **Subsequent Runs (Warm)**:
+   - Reuses cached model from `/tmp`
+   - Model already loaded in memory
+   - **Duration**: ~500ms-1s
+
+**Benefits**:
+
+- Small deployment package (~2MB vs ~615MB)
+- Faster deployments
+- Easy model updates (just replace file in Storage)
+- No deployment size limits
+
+### Image Preprocessing
+
+The model expects images of size `224x224` pixels (standard for transfer learning models). If your model uses a different input size, update `target_size` in `predict.py`.
 
 ## Important Notes
 
@@ -247,36 +192,14 @@ curl -X POST \
 
 The `predict.py` file contains a hardcoded list of class names in the `_get_class_names()` method. **This must match the exact order of classes used during model training.**
 
-If your model was trained with a different order or different classes, update the list in `predict.py:98`.
+If your model was trained with a different order or different classes, update the list in `predict.py`.
 
-### Image Preprocessing
+### Required Permissions
 
-The model expects images of size `224x224` pixels (common for transfer learning models). If your model uses a different input size, update `target_size` in `predict.py:31`.
+The API key specified in `APPWRITE_API_KEY` must have:
 
-### Model Storage Options
-
-**Option A: Storage (Recommended)**
-- Upload model to Appwrite Storage
-- Downloaded on first run and cached in `/tmp`
-- Set `MODEL_BUCKET_ID` and `MODEL_FILE_ID` env vars
-- Pros:
-  - Much smaller deployment package (~2MB vs ~615MB)
-  - Easier model updates (just replace file in Storage)
-  - Faster deployments
-- Cons:
-  - Slightly slower cold start (~3-5 seconds to download model)
-  - Requires Storage bucket setup
-
-**Option B: Bundle with Function**
-- Include model file in deployment package
-- Set `MODEL_PATH=./care_symbols_model_20251009_233516.keras`
-- Pros:
-  - Fastest cold start (model already local)
-  - No external dependencies
-- Cons:
-  - Very large deployment package (~615MB)
-  - Longer deployment times
-  - May hit Appwrite deployment size limits
+- **Storage**: Read permission for both user images bucket and model bucket
+- **Database**: Read permission for the care_symbols collection
 
 ## Error Handling
 
@@ -284,28 +207,34 @@ The function includes comprehensive error handling:
 
 - **400 Bad Request**: Missing `fileId` or invalid JSON
 - **500 Internal Server Error**: Configuration errors, model loading failures, or unexpected errors
-- Logs are written to stderr for debugging in Appwrite Console
+- Logs are written to stderr for debugging
 
 ## Performance Considerations
 
-- **Cold Start**: First execution loads the model (~2-5 seconds)
+- **Cold Start**: First execution downloads and loads the model (~3-5 seconds)
 - **Warm Execution**: Subsequent executions reuse loaded model (~500ms-1s)
 - **Timeout**: Set function timeout to at least 60 seconds
 - **Memory**: TensorFlow model requires ~512MB-1GB RAM
+- **Cache Duration**: Model cached in `/tmp` persists across warm executions
 
 ## Troubleshooting
 
 ### Model Loading Errors
-- Verify model file is included in deployment
-- Check `MODEL_PATH` environment variable
-- Ensure TensorFlow version matches training version
+
+- Verify `MODEL_BUCKET_ID` and `MODEL_FILE_ID` are correct
+- Ensure API key has Storage read permissions for model bucket
+- Check that model file is accessible in Storage
+- Review function execution logs for specific error messages
 
 ### Prediction Errors
+
 - Verify image preprocessing matches training preprocessing
 - Check class names order in `_get_class_names()`
-- Review logs in Appwrite Console
+- Ensure model file is not corrupted
+- Review function execution logs
 
 ### Database Query Errors
+
 - Verify `DATABASE_ID` and `COLLECTION_ID` are correct
 - Ensure API key has database read permissions
 - Check that `title` field in collection matches model labels exactly
@@ -313,7 +242,3 @@ The function includes comprehensive error handling:
 ## License
 
 MIT
-
-## Support
-
-For issues or questions, please open an issue in this repository.
