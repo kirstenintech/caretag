@@ -334,7 +334,6 @@ Built for **Appwrite 2025 Hacktoberfest Hackathon**
 - 🗄️ **Database** - Store and query care symbol metadata
 - 📦 **Storage** - Handle user image uploads and ML model storage
 - ⚡ **Functions** - Run TensorFlow inference server-side
-- 🔐 **Authentication** - Manage API keys and permissions
 
 **Technical Highlights:**
 
@@ -344,8 +343,6 @@ Built for **Appwrite 2025 Hacktoberfest Hackathon**
 - Accessible, responsive UI
 - Performance optimizations (caching, lazy loading)
 - Complete documentation
-
-For submission details, see [SUBMISSION.md](SUBMISSION.md).
 
 ## 🙏 Acknowledgments
 
