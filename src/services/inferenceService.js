@@ -1,4 +1,4 @@
-import { appwriteConfig } from '../lib/appwrite';
+import { appwriteConfig } from "../lib/appwrite";
 
 /**
  * Inference Service
@@ -13,7 +13,7 @@ import { appwriteConfig } from '../lib/appwrite';
  * @returns {Promise<Object>} - Inference results
  * @throws {Error} - If inference fails
  */
-export const detectSymbols = async (fileId, topK = 5, threshold = 0.5) => {
+export const detectSymbols = async (fileId, topK = 5, threshold = 0.4) => {
   try {
     const url = `${appwriteConfig.endpoint}/functions/${appwriteConfig.functionId}/executions`;
 
@@ -28,10 +28,10 @@ export const detectSymbols = async (fileId, topK = 5, threshold = 0.5) => {
     };
 
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'X-Appwrite-Project': appwriteConfig.projectId,
+        "Content-Type": "application/json",
+        "X-Appwrite-Project": appwriteConfig.projectId,
       },
       body: JSON.stringify(payload),
     });
@@ -46,16 +46,17 @@ export const detectSymbols = async (fileId, topK = 5, threshold = 0.5) => {
     const execution = await response.json();
 
     // If async: false was honored, the execution should already be complete
-    if (execution.status === 'completed') {
-      const result = JSON.parse(execution.responseBody || '{}');
+    if (execution.status === "completed") {
+      const result = JSON.parse(execution.responseBody || "{}");
 
       if (!result.success) {
-        throw new Error(result.error || 'Inference failed');
+        throw new Error(result.error || "Inference failed");
       }
 
       return result;
-    } else if (execution.status === 'failed') {
-      const errorMsg = execution.stderr || execution.responseBody || 'Unknown error';
+    } else if (execution.status === "failed") {
+      const errorMsg =
+        execution.stderr || execution.responseBody || "Unknown error";
       throw new Error(`Execution failed: ${errorMsg}`);
     } else {
       // If still processing, poll for completion
@@ -63,15 +64,22 @@ export const detectSymbols = async (fileId, topK = 5, threshold = 0.5) => {
       return result;
     }
   } catch (error) {
-    console.error('Error calling inference function:', error);
+    console.error("Error calling inference function:", error);
 
     // Provide user-friendly error messages
-    if (error.message?.includes('network') || error.message?.includes('fetch')) {
-      throw new Error('Network error. Please check your connection and try again.');
-    } else if (error.message?.includes('timeout')) {
-      throw new Error('Request timed out. Please try again.');
+    if (
+      error.message?.includes("network") ||
+      error.message?.includes("fetch")
+    ) {
+      throw new Error(
+        "Network error. Please check your connection and try again."
+      );
+    } else if (error.message?.includes("timeout")) {
+      throw new Error("Request timed out. Please try again.");
     } else {
-      throw new Error(error.message || 'Failed to analyze image. Please try again.');
+      throw new Error(
+        error.message || "Failed to analyze image. Please try again."
+      );
     }
   }
 };
@@ -83,15 +91,19 @@ export const detectSymbols = async (fileId, topK = 5, threshold = 0.5) => {
  * @param {number} interval - Polling interval in ms (default: 1000)
  * @returns {Promise<Object>} - Execution result
  */
-const pollExecution = async (executionId, maxAttempts = 60, interval = 1000) => {
+const pollExecution = async (
+  executionId,
+  maxAttempts = 60,
+  interval = 1000
+) => {
   const url = `${appwriteConfig.endpoint}/functions/${appwriteConfig.functionId}/executions/${executionId}`;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'X-Appwrite-Project': appwriteConfig.projectId,
+          "X-Appwrite-Project": appwriteConfig.projectId,
         },
       });
 
@@ -102,18 +114,19 @@ const pollExecution = async (executionId, maxAttempts = 60, interval = 1000) => 
       const execution = await response.json();
 
       // Check if execution is complete
-      if (execution.status === 'completed') {
+      if (execution.status === "completed") {
         // Parse response body
-        const result = JSON.parse(execution.responseBody || '{}');
+        const result = JSON.parse(execution.responseBody || "{}");
 
         // Check for success
         if (!result.success) {
-          throw new Error(result.error || 'Inference failed');
+          throw new Error(result.error || "Inference failed");
         }
 
         return result;
-      } else if (execution.status === 'failed') {
-        const errorMsg = execution.stderr || execution.responseBody || 'Unknown error';
+      } else if (execution.status === "failed") {
+        const errorMsg =
+          execution.stderr || execution.responseBody || "Unknown error";
         throw new Error(`Execution failed: ${errorMsg}`);
       }
 
@@ -122,11 +135,14 @@ const pollExecution = async (executionId, maxAttempts = 60, interval = 1000) => 
     } catch (error) {
       // If it's the last attempt, throw the error
       if (attempt === maxAttempts - 1) {
-        throw new Error('Analysis timed out. Please try again.');
+        throw new Error("Analysis timed out. Please try again.");
       }
 
       // If it's a parsing or status error, rethrow immediately
-      if (error.message?.includes('Execution failed') || error.message?.includes('Inference failed')) {
+      if (
+        error.message?.includes("Execution failed") ||
+        error.message?.includes("Inference failed")
+      ) {
         throw error;
       }
 
@@ -134,5 +150,5 @@ const pollExecution = async (executionId, maxAttempts = 60, interval = 1000) => 
     }
   }
 
-  throw new Error('Analysis timed out. Please try again.');
+  throw new Error("Analysis timed out. Please try again.");
 };
