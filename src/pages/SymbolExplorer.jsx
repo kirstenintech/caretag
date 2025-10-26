@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import {
   Container,
   Typography,
@@ -12,6 +12,7 @@ import {
   Alert,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import SymbolCard from "../components/SymbolCard";
 import { getAllSymbols } from "../services/symbolService";
 import { getImageUrl } from "../utils/imageUtils";
@@ -26,49 +27,32 @@ const categories = [
 
 const SymbolExplorer = () => {
   const [selectedCategory, setSelectedCategory] = useState("washing");
-  const [symbols, setSymbols] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const hasFetched = useRef(false);
 
-  // Fetch symbols from Appwrite on component mount
-  useEffect(() => {
-    // Prevent duplicate calls in StrictMode
-    if (hasFetched.current) return;
-    hasFetched.current = true;
+  // Fetch symbols with 24-hour cache
+  const {
+    data: symbols = [],
+    isLoading: loading,
+    error,
+  } = useQuery({
+    queryKey: ["symbols"],
+    queryFn: async () => {
+      const data = await getAllSymbols();
 
-    const fetchSymbols = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await getAllSymbols();
-
-        // Log first symbol to check structure
-        if (data.length > 0) {
-          console.log("Sample symbol data:", data[0]);
-        }
-
-        // Transform data and construct image URLs
-        const transformedData = data.map((symbol) => ({
-          id: symbol.$id,
-          category: symbol.category,
-          title: symbol.title,
-          shortDescription: symbol.shortDescription || symbol.description,
-          image: symbol.image ? getImageUrl(symbol.image) : null,
-        }));
-
-        setSymbols(transformedData);
-      } catch (err) {
-        setError(
-          err.message || "Failed to load symbols. Please try again later."
-        );
-      } finally {
-        setLoading(false);
+      // Log first symbol to check structure
+      if (data.length > 0) {
+        console.log("Sample symbol data:", data[0]);
       }
-    };
 
-    fetchSymbols();
-  }, []);
+      // Transform data and construct image URLs
+      return data.map((symbol) => ({
+        id: symbol.$id,
+        category: symbol.category,
+        title: symbol.title,
+        shortDescription: symbol.shortDescription || symbol.description,
+        image: symbol.image ? getImageUrl(symbol.image) : null,
+      }));
+    },
+  });
 
   const handleCategoryChange = (_event, newValue) => {
     setSelectedCategory(newValue);
@@ -183,8 +167,8 @@ const SymbolExplorer = () => {
 
         {/* Error State */}
         {error && (
-          <Alert severity="error" sx={{ mb: 4 }} onClose={() => setError(null)}>
-            {error}
+          <Alert severity="error" sx={{ mb: 4 }}>
+            {error.message || "Failed to load symbols. Please try again later."}
           </Alert>
         )}
 
