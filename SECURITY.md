@@ -16,10 +16,11 @@ We take the security of CareTag seriously. If you believe you have found a secur
 **Please do not report security vulnerabilities through public GitHub issues.**
 
 Instead, please report them via:
+
 - **GitHub Security Advisories**: Use the "Security" tab on this repository to create a private security advisory
 - **Alternative**: Contact me via LinkedIn at https://www.linkedin.com/in/kirstenintech/
 
-You should receive a response within 48 hours.
+You should receive a response.
 
 Please include the following information in your report:
 
