@@ -249,7 +249,7 @@ VITE_APPWRITE_FUNCTION_ID=your_function_id
 
 ## 🌐 Deployment
 
-### Frontend (Vercel/Netlify)
+### Frontend
 
 ```bash
 npm run build
