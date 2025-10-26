@@ -7,6 +7,7 @@ import SymbolExplorer from './pages/SymbolExplorer';
 import Upload from './pages/Upload';
 import Analyzing from './pages/Analyzing';
 import Results from './pages/Results';
+import About from './pages/About';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/upload" element={<Upload />} />
           <Route path="/analyzing" element={<Analyzing />} />
           <Route path="/results" element={<Results />} />
+          <Route path="/about" element={<About />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>
