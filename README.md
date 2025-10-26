@@ -294,11 +294,6 @@ npm run dev
 - **Bundle size**: Vite tree-shaking
 - **Model efficiency**: TensorFlow Lite (2MB vs 615MB)
 
-## 🔗 Related Repositories
-
-- [Model Training](https://github.com/kirstenintech/care-symbol-training) - TensorFlow model training code
-- [Synthetic Data Generation](https://github.com/kirstenintech/care-symbol-synthetic-image) - Training data generation
-
 ## 🤝 Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
