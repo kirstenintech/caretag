@@ -13,7 +13,7 @@ import { appwriteConfig } from "../lib/appwrite";
  * @returns {Promise<Object>} - Inference results
  * @throws {Error} - If inference fails
  */
-export const detectSymbols = async (fileId, topK = 5, threshold = 0.35) => {
+export const detectSymbols = async (fileId, topK = 5, threshold = 0.4) => {
   try {
     const url = `${appwriteConfig.endpoint}/functions/${appwriteConfig.functionId}/executions`;
 
